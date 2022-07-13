@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">PM012PRestApis</string>
+    <string name="nombres">nombres</string>
+    <string name="apellidos">apellidos</string>
+    <string name="bntcrear">Crear Empleado</string>
+
+    <string name="codigo">CODIGO</string>
+
+    <!-- codigos de respuesta del web api-->
+    <string name="StatusSuccess">00</string>
+    <string name="StatusSuccessText">OK</string>
+
+</resources>
