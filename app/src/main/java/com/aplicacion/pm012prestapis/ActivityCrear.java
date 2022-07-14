@@ -1,12 +1,26 @@
 package com.aplicacion.pm012prestapis;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
+import android.Manifest;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -19,13 +33,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 public class ActivityCrear extends AppCompatActivity {
 
-    Button btncrear;
+    static final int REQUESTCAMERA = 100;
+    static final int TAKEPHOTO = 101;
+
+    ImageView ObjectImage;
+    String currentPhotoPath;
+
+    Button btncrear, btnfoto;
     List<Message> MessageList;
 
     @Override
@@ -36,6 +61,7 @@ public class ActivityCrear extends AppCompatActivity {
 
         MessageList = new ArrayList<>();
 
+        btnfoto = (Button) findViewById(R.id.bntfoto);
         btncrear = (Button) findViewById(R.id.btncrear);
 
         btncrear.setOnClickListener(new View.OnClickListener() {
@@ -44,6 +70,106 @@ public class ActivityCrear extends AppCompatActivity {
                 CrearEmple();
             }
         });
+
+        btnfoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                OtorgarPermisos();
+            }
+        });
+    }
+
+    private void OtorgarPermisos()
+    {
+        if(ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) !=
+                PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{ Manifest.permission.CAMERA }, REQUESTCAMERA);
+        }
+        else
+        {
+            dispatchTakePictureIntent();
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        //File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File storageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Ensure that there's a camera activity to handle the intent
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            // Create the File where the photo should go
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // Error occurred while creating the File
+            }
+            // Continue only if the File was successfully created
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.aplicacion.pm012prestapis.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, TAKEPHOTO);
+            }
+        }
+    }
+
+
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+
+        if(requestCode == TAKEPHOTO && resultCode == RESULT_OK)
+        {
+            /*
+            Bundle extraerfoto = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extraerfoto.get("data");
+            ObjectImage.setImageBitmap(imageBitmap);
+             */
+
+            File foto = new File(currentPhotoPath);
+            ObjectImage.setImageURI(Uri.fromFile(foto));
+
+        }
+    }
+
+
+    public static String ImageToBase64(String filePath){
+        Bitmap bmp = null;
+        ByteArrayOutputStream bos = null;
+        byte[] bt = null;
+        String encodeString = null;
+        try
+        {
+            bmp = BitmapFactory.decodeFile(filePath);
+            bos = new ByteArrayOutputStream();
+            bmp.compress(Bitmap.CompressFormat.JPEG, 50, bos);
+            bt = bos.toByteArray();
+            encodeString = Base64.encodeToString(bt, Base64.DEFAULT);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        return encodeString;
     }
 
     private void CrearEmple()

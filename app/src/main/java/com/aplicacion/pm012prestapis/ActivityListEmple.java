@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import com.android.volley.Request;
@@ -21,7 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ActivityListEmple extends AppCompatActivity {
-    
+
+
     ListView ListEmple;
     List<Empleado> empleadoList;
     ArrayList<String> arrayEmple;
