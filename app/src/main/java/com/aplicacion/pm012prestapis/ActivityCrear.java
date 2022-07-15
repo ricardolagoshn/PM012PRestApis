@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,6 +21,7 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.android.volley.Request;
@@ -52,6 +54,8 @@ public class ActivityCrear extends AppCompatActivity {
 
     Button btncrear, btnfoto;
     List<Message> MessageList;
+    EditText nombres, apellidos, edad , telefono, direccion, cedula;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -63,6 +67,13 @@ public class ActivityCrear extends AppCompatActivity {
 
         btnfoto = (Button) findViewById(R.id.bntfoto);
         btncrear = (Button) findViewById(R.id.btncrear);
+        nombres = (EditText) findViewById(R.id.txtnombres);
+        apellidos = (EditText) findViewById(R.id.apellidos);
+        edad = (EditText) findViewById(R.id.edad);
+        telefono = (EditText) findViewById(R.id.telefono);
+        direccion = (EditText) findViewById(R.id.direccion);
+        cedula = (EditText) findViewById(R.id.cedula);
+        ObjectImage = (ImageView) findViewById(R.id.imageView) ;
 
         btncrear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,19 +185,23 @@ public class ActivityCrear extends AppCompatActivity {
 
     private void CrearEmple()
     {
+        JSONObject JSONEmple;
         String PostUrl = Configuracion.EndpointCreateEmple;
 
         HashMap<String, String> parametros = new HashMap<>();
-        parametros.put(getResources().getString(R.string.nombres),"Jose Miguel");
-        parametros.put(getResources().getString(R.string.apellidos),"Perez");
-        parametros.put(Configuracion.FieldEdad,"24");
-        parametros.put("telefono","99001134");
-        parametros.put("cedula","0501199904325");
-        parametros.put("direccion","COLONIA EL ALTIPLANO");
+        parametros.put(getResources().getString(R.string.nombres), nombres.getText().toString());
+        parametros.put(getResources().getString(R.string.apellidos),apellidos.getText().toString());
+        parametros.put(Configuracion.FieldEdad,edad.getText().toString());
+        parametros.put("telefono", telefono.getText().toString());
+        parametros.put("cedula", cedula.getText().toString());
+        parametros.put("direccion",direccion.getText().toString());
+        parametros.put("foto",ImageToBase64(currentPhotoPath));
 
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
 
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, PostUrl, new JSONObject(parametros), new Response.Listener<JSONObject>() {
+        JSONEmple = new JSONObject(parametros);
+
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, PostUrl, JSONEmple, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response)
             {
